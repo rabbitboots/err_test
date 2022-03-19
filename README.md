@@ -94,7 +94,7 @@ This is a tiny example. Writing tests for large modules can get pretty maddening
 `errTest.okErrTry(func, [...])`: Run a function, and report if its first return value was truthy or falsy.
 
 
-`errTest.okErrExpectPass(func, ...)`: Run a function, and raise an error if its first return value was falsy.
+`errTest.okErrExpectPass(func, [...])`: Run a function, and raise an error if its first return value was falsy.
 
 
 `errTest.expectFail(func, [...])`: Run a function, and raise an error if its first return value was truthy.
