@@ -1,7 +1,7 @@
 --local path = ... and (...):match("(.-)[^%.]+$") or ""
 
 local errTest = {
-	_VERSION = "1.0.0", -- Prerelease, packaged with xmlToTable
+	_VERSION = "1.0.0",
 	_URL = "https://github.com/rabbitboots/err_test",
 	_DESCRIPTION = "A module for testing pcall-wrapped error calls in functions.",
 	_LICENSE = [[
