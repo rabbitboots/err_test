@@ -67,7 +67,7 @@ End of tests.
 
 From this, we can see that the error messages are what we expect them to be.
 
-This is a tiny example. Writing tests for large modules can get pretty maddening, and the output becomes difficult to read as well. In any case, if you want to check multiple error scenarios in one step, this is one way to do it.
+This is a tiny example. Writing tests for large modules can get pretty maddening, and the output becomes difficult to read as well. Nonetheless, if you want to check multiple error scenarios in one step, this is one way to do it.
 
 
 ## Public Functions
@@ -75,7 +75,7 @@ This is a tiny example. Writing tests for large modules can get pretty maddening
 `errTest.register(func, label)`: Register a function using the string ID `label`, which will be used in terminal output when running tests. Identical labels can be assigned to multiple functions (not recommended), but an individual function can only have one label assigned at a time. Pass `nil` as the `label` argument to deregister a function.
 
 
-`function errTest.unregisterAll()`: Remove all functions and labels from the internal registry.
+`errTest.unregisterAll()`: Remove all functions and labels from the internal registry.
 
 
 ### pcall() wrappers
