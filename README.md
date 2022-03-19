@@ -2,7 +2,7 @@
 
 A set of `pcall` wrappers that can be used to test error paths in Lua functions.
 
-Its main purpose is for writing test scripts that hit multiple calls to `error()` without halting execution. Care should be taken with functions that modify state before the error paths are hit, and also functions which don't do proper cleanup when raising an error.
+Its main purpose is for writing test scripts that hit multiple calls to `error()` without halting execution. Care should be taken with functions that modify state before the error paths are hit, and also functions which don't do cleanup when raising an error.
 
 
 ## Example
@@ -101,5 +101,6 @@ This is a tiny example. Writing tests for large modules can get pretty maddening
 
 
 
+## Options
 
-
+`errTest.type_hide` is a hash table of Lua type strings (`"function"`, `"table"`, etc.), which are all set to false by default. When assigned true, the memory addresses of these values are masked when errTest writes them to the terminal with `print()`, such that 'type: 0x012345678..' becomes just '\<type\>'. Use this if you are trying to diff the output of two runs, and the changing pointer addresses are causing issues.
