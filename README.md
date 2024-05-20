@@ -1,106 +1,196 @@
+**Version:** 2.0.0
+
 # errTest
 
-A set of `pcall` wrappers that can be used to test error paths in Lua functions.
+A testing library for Lua scripts.
 
-Its main purpose is for writing test scripts that hit multiple calls to `error()` without halting execution. Care should be taken with functions that modify state before the error paths are hit, and also functions which don't do cleanup when raising an error.
-
-
-## Example
-
-Say we want to test the error handling of public functions in foobar.lua:
-```lua
-local foobar = {}
-
-function foobar.add(a, b)
-	if type(a) ~= "number" then error("arg #1 needs to be a number."); end
-	if type(b) ~= "number" then error("arg #2 needs to be a number."); end
-
-	return a + b
-end
-
-return foobar
-```
-
-Our test script looks like this:
-```lua
-local foobar = require("foobar")
-
-local errTest = require("err_test")
-
-do
-	print("Test: " .. errTest.register(foobar.add, "foobar.add"))
-	local ok, res
-
-	print("\n[+] expected behavior")
-	ok, res = errTest.expectPass(foobar.add, 1, 2)
-	print(ok, res, "<- should say 3")
-
-	print("\n[-] arg #1 bad type")
-	ok, res = errTest.expectFail(foobar.add, false, 2)
-
-	print("\n[-] arg #2 bad type")
-	ok, res = errTest.expectFail(foobar.add, 1, function() end)
-end
-
-print("End of tests.")
-
-errTest.unregisterAll()
-```
-
-The script generates this output:
-```
-Test: foobar.add
-
-[+] expected behavior
-(expectPass) foobar.add(1, 2): [Pass]
-true	3	<- should say 3
-
-[-] arg #1 bad type
-(expectFail) foobar.add(false, 2): [Fail]
--> ./foobar.lua:4: arg #1 needs to be a number.
-
-[-] arg #2 bad type
-(expectFail) foobar.add(1, function: 0x55b7f2b1a0d0): [Fail]
--> ./foobar.lua:5: arg #2 needs to be a number.
-End of tests.
-```
-
-From this, we can see that the error messages are what we expect them to be.
-
-This is a tiny example. Writing tests for large modules can get pretty maddening, and the output becomes difficult to read as well. Nonetheless, if you want to check multiple error scenarios in one step, this is one way to do it.
+For a usage example, please see the test script for [utf8Tools](https://github.com/rabbitboots/utf8_tools).
 
 
-## Public Functions
-
-`errTest.register(func, label)`: Register a function using the string ID `label`, which will be used in terminal output when running tests. Identical labels can be assigned to multiple functions (not recommended), but an individual function can only have one label assigned at a time. Pass `nil` as the `label` argument to deregister a function.
+# API
 
 
-`errTest.unregisterAll()`: Remove all functions and labels from the internal registry.
+## errTest.new
+
+Creates a new tester instance.
+
+`local test = errTest.new([name], [verbosity])`
+
+* `name`: (string) An optional test name.
+
+* `verbosity`: (number) The test's output verbosity level when printing to the terminal.
+
+**Returns:** The tester object.
 
 
-### pcall() wrappers
+**Notes:**
 
-`errTest.try(func, [...])`: Run a function via `pcall()`, and report if it completed or ended in a call to `error()`.
-
-
-`errTest.expectPass(func, [...])`: Run a function via `pcall()`, and raise an error if it ended in a call to `error()`.
-
-
-`errTest.expectFail(func, [...])`: Run a function via `pcall()`, and raise an error if it completed without calling `error()`.
-
-
-### No pcall()
-
-`errTest.okErrTry(func, [...])`: Run a function, and report if its first return value was truthy or falsy.
+* The verbosity levels are:
+  * `0`: nothing
+  * `1`: final results
+  * `2`: + test names, test results, warnings
+  * `3`: + job headers
+  * `4`: + all job output
+  * `5`: + messages from built-in assertions
 
 
-`errTest.okErrExpectPass(func, [...])`: Run a function, and raise an error if its first return value was falsy.
+# Tester: Setup and Configuration
+
+## Tester:registerFunction
+
+Registers a function (which is *to be tested*) with a human-readable name, or removes the function from the tester's registry.
+
+`Tester:registerFunction([label], func)`
+
+* `[label]`: (string) The name to assign the function, or `nil` to remove the function from the registry.
+
+* `func`: (function) The function to register or remove.
 
 
-`errTest.okErrExpectFail(func, [...])`: Run a function, and raise an error if its first return value was truthy.
+## Tester:registerJob
+
+Registers a job function (which will *conduct tests*) with an optional human-readable name.
+
+`Tester:registerJob([desc], func)`
+
+* `[desc]` (string) Optional description to print when running the job.
+
+* `func` (function) The job function.
 
 
+**Notes:**
 
-## Options
+* Running a specific job function more than once in a test is treated as an error.
 
-`errTest.type_hide` is a hash table of Lua type strings (`"function"`, `"table"`, etc.), which are all set to false by default. When assigned true, the memory addresses of these values are masked when errTest writes them to the terminal with `print()`, such that 'type: 0x012345678..' becomes just '\<type\>'. Use this if you are trying to diff the output of two runs, and the changing pointer addresses are causing issues.
+
+## Tester:runJobs
+
+Runs the tester. Each job is wrapped in a `pcall`, and they are executed in the order of registration. Check the final results by calling `local ok = Tester:allGood()` or checking the values in `Tester.counter`.
+
+`Tester:runJobs()`
+
+
+## Tester:allGood
+
+Checks if all jobs passed.
+
+`local ok = Tester:allGood()`
+
+**Returns:** True if all jobs passed, false if not.
+
+**Notes:**
+
+* A tester with zero jobs will always return true.
+
+
+# Tester: Job Methods
+
+The following methods are intended to be called within job functions.
+
+## Tester:print
+
+Wrapper for Lua's `print()` that only prints if an appropriate verbosity level is set.
+
+`Tester:print(level, ...)`
+
+* `level`: The verbosity level of this message. If the tester's verbosity is lower, the message is not printed.
+
+* `...`: Arguments for `print()`.
+
+
+## Tester:write
+
+Wrapper for Lua's `io.write()` that only prints if an appropriate verbosity level is set.
+
+`Tester:write(level, str)`
+
+* `level`: The verbosity level of this message. If the tester's verbosity is lower, the message is not printed.
+
+* `str`: The string for `io.write()`.
+
+
+## Tester:warn
+
+Increments the tester's warning counter, and prints a message to the terminal *if* the tester's verbosity level is 2 or greater.
+
+`Tester:warn(str)`
+
+* `str`: The string to conditionally print.
+
+
+## Tester:expectLuaReturn
+
+Runs a function, expecting it to return without raising a Lua error. If an error is raised, then the job fails.
+
+`Tester:expectLuaReturn([desc], func, ...)`
+
+* `[desc]`: (string) Optional string description for the job.
+
+* `func`: (function) The function to test.
+
+* `...`: varargs list to be passed to `func`.
+
+
+## Tester:expectLuaError
+
+Runs a function, expecting it to raise a Lua error. If the function returns, then the job fails.
+
+`Tester:expectLuaError([desc], func, ...)`
+
+* `[desc]`: (string) Optional string description for the job.
+
+* `func`: (function) The function to test.
+
+* `...`: varargs list to be passed to `func`.
+
+
+**Notes:**
+
+* Care should be taken with functions that modify global state before error paths are hit, and also functions which do not clean up their allocations or other state when raising a Lua error.
+
+
+# Tester Assertion Methods
+
+The tester instance includes the following assertion methods:
+
++---------------------------------------------------------------+
+| Method                          | Pass Condition              |
++---------------------------------+-----------------------------+
+| Tester:isEqual(a, b)            | a == b                      |
+| Tester:isNotEqual(a, b)         | a ~= b                      |
+| Tester:isBoolTrue(a)            | a == true                   |
+| Tester:isBoolFalse(a)           | a == false                  |
+| Tester:isEvalTrue(a)            | a ~= false and a ~= nil     |
+| Tester:isEvalFalse(a)           | a == false or a == nil      |
+| Tester:isNil(a)                 | a == nil                    |
+| Tester:isNotNil(a)              | a ~= nil                    |
+| Tester:isNan(a)                 | a ~= a                      |
+| Tester:isNotNan(a)              | a == a                      |
+| Tester:isType(val, expected)    | *type(val) in expected*     |
+| Tester:isNotType(val, expected) | *type(val) not in expected* |
++---------------------------------------------------------------+
+
+For the last two, `expected` is a string with Lua type tags that are separated by non-alphanumeric characters. For example, to assert that a value is a string or a boolean, you could call `Tester:isType(val, "string, boolean")`.
+
+
+# License (MIT)
+
+Copyright (c) 2022 - 2024 RBTS
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
