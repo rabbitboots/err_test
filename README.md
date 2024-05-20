@@ -153,9 +153,8 @@ Runs a function, expecting it to raise a Lua error. If the function returns, the
 
 The tester instance includes the following assertion methods:
 
-+---------------------------------------------------------------+
 | Method                          | Pass Condition              |
-+---------------------------------+-----------------------------+
+| ------------------------------- | --------------------------- |
 | Tester:isEqual(a, b)            | a == b                      |
 | Tester:isNotEqual(a, b)         | a ~= b                      |
 | Tester:isBoolTrue(a)            | a == true                   |
@@ -168,7 +167,6 @@ The tester instance includes the following assertion methods:
 | Tester:isNotNan(a)              | a == a                      |
 | Tester:isType(val, expected)    | *type(val) in expected*     |
 | Tester:isNotType(val, expected) | *type(val) not in expected* |
-+---------------------------------------------------------------+
 
 For the last two, `expected` is a string with Lua type tags that are separated by non-alphanumeric characters. For example, to assert that a value is a string or a boolean, you could call `Tester:isType(val, "string, boolean")`.
 
