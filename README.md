@@ -1,4 +1,4 @@
-**Version:** 2.0.0
+**Version:** 2.1.0
 
 # errTest
 
@@ -12,7 +12,7 @@ For a usage example, please see the test script for [utf8Tools](https://github.c
 
 ## errTest.new
 
-Creates a new tester instance.
+Creates a new Tester instance.
 
 `local test = errTest.new([name], [verbosity])`
 
@@ -20,25 +20,27 @@ Creates a new tester instance.
 
 * `verbosity`: (number) The test's output verbosity level when printing to the terminal.
 
-**Returns:** The tester object.
+**Returns:** The Tester object.
 
 
 **Notes:**
 
-* The verbosity levels are:
-  * `0`: nothing
-  * `1`: final results
-  * `2`: + test names, test results, warnings
-  * `3`: + job headers
-  * `4`: + all job output
-  * `5`: + messages from built-in assertions
+* Here is a chart of the verbosity levels. Each level includes the output of the lower levels:
+
+| Level | Description                       |
++-------+-----------------------------------+
+| 0     | No output                         |
+| 1     | Start, end labels; final results  |
+| 2     | Job names, warnings               |
+| 3     | Job task labels                   |
+| 4     | Job and assertion output          |
 
 
 # Tester: Setup and Configuration
 
 ## Tester:registerFunction
 
-Registers a function (which is *to be tested*) with a human-readable name, or removes the function from the tester's registry.
+Registers a function (which is *to be tested*) with a human-readable name, or removes the function from the Tester's registry.
 
 `Tester:registerFunction([label], func)`
 
@@ -65,22 +67,9 @@ Registers a job function (which will *conduct tests*) with an optional human-rea
 
 ## Tester:runJobs
 
-Runs the tester. Each job is wrapped in a `pcall`, and they are executed in the order of registration. Check the final results by calling `local ok = Tester:allGood()` or checking the values in `Tester.counter`.
+Runs the Tester. Each job is executed in the order of registration, and is considered to have passed if it returns without raising a Lua error.
 
 `Tester:runJobs()`
-
-
-## Tester:allGood
-
-Checks if all jobs passed.
-
-`local ok = Tester:allGood()`
-
-**Returns:** True if all jobs passed, false if not.
-
-**Notes:**
-
-* A tester with zero jobs will always return true.
 
 
 # Tester: Job Methods
@@ -93,7 +82,7 @@ Wrapper for Lua's `print()` that only prints if an appropriate verbosity level i
 
 `Tester:print(level, ...)`
 
-* `level`: The verbosity level of this message. If the tester's verbosity is lower, the message is not printed.
+* `level`: The verbosity level of this message. If the Tester's verbosity is lower, the message is not printed.
 
 * `...`: Arguments for `print()`.
 
@@ -104,18 +93,29 @@ Wrapper for Lua's `io.write()` that only prints if an appropriate verbosity leve
 
 `Tester:write(level, str)`
 
-* `level`: The verbosity level of this message. If the tester's verbosity is lower, the message is not printed.
+* `level`: The verbosity level of this message. If the Tester's verbosity is lower, the message is not printed.
 
 * `str`: The string for `io.write()`.
 
 
 ## Tester:warn
 
-Increments the tester's warning counter, and prints a message to the terminal *if* the tester's verbosity level is 2 or greater.
+Increments the Tester's warning counter, and prints a message to the terminal *if* the Tester's verbosity level is 2 or greater.
 
 `Tester:warn(str)`
 
 * `str`: The string to conditionally print.
+
+
+## Tester:lf
+
+Prints a line feed (newline) if the verbosity level matches. Works in tandem with `Tester:print()`, `Tester:write()` or `Tester:warn()` to prevent more than two line feeds from being printed at a time.
+
+For this to work correctly, you must not print trailing `\n`s at the end of any console output.
+
+`Tester:lf(level)`
+
+* `level`: The verbosity level of the line feed to print. If the Tester's verbosity is lower, the line feed is not printed.
 
 
 ## Tester:expectLuaReturn

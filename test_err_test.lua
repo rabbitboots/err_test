@@ -1,8 +1,8 @@
-local path = ... and (...):match("(.-)[^%.]+$") or ""
+local PATH = ... and (...):match("(.-)[^%.]+$") or ""
 
 
-local errTest = require(path .. "err_test")
-local strict = require(path .. "test.lib.strict")
+local errTest = require(PATH .. "err_test")
+local strict = require(PATH .. "test.lib.strict")
 
 
 local function dummyAlwaysError()
@@ -17,12 +17,24 @@ local function dummyNotOK()
 end
 
 
-local self = errTest.new("errTest self-test")
-local _mt_test = getmetatable(errTest.new("tester"))
+-- The verbosity of the main tester object.
+local cli_verbosity
+for i = 0, #arg do
+	if arg[i] == "--verbosity" then
+		cli_verbosity = tonumber(arg[i + 1])
+		if not cli_verbosity then
+			error("invalid verbosity value")
+		end
+	end
+end
 
 
--- the verbosity of the tester instances being tested.
+-- The verbosity of the tester instances being tested.
 local sub_ver = 0
+
+
+local self = errTest.new("errTest self-test", cli_verbosity)
+local _mt_test = getmetatable(errTest.new("tester"))
 
 
 -- [===[
@@ -66,7 +78,6 @@ self:registerJob("Tester:registerJob()", function(self)
 
 	do
 		local tester = errTest.new("tester", sub_ver)
-		self:print(2, "[-] attempt to add a job function that is already registered")
 		local dupe = function() end
 		tester:registerJob("first job", dupe)
 		self:expectLuaError("attempt to add dupe job", _mt_test.registerJob, tester, "dupe job", dupe)
@@ -108,49 +119,7 @@ end
 --]===]
 
 
--- [===[
-self:registerFunction("Tester:allGood()", _mt_test.allGood)
-
-self:registerJob("Tester:allGood()", function(self)
-	do
-		local tester = errTest.new("tester", sub_ver)
-
-		self:print(2, "zero jobs = pass by default")
-		local ok = tester:allGood()
-		self:isEvalTrue(ok)
-	end
-
-	do
-		local tester = errTest.new("tester", sub_ver)
-
-		self:print(2, "50% jobs passed")
-		tester:registerJob("one", function() end)
-		tester:registerJob("two", dummyAlwaysError)
-
-		tester:runJobs()
-		local ok = tester:allGood()
-		self:isEvalFalse(ok)
-		self:isEqual(tester.counters.pass, 1)
-	end
-
-	do
-		local tester = errTest.new("tester", sub_ver)
-
-		self:print(2, "100% jobs passed")
-		tester:registerJob("one", function() end)
-		tester:registerJob("two", function() end)
-
-		tester:runJobs()
-		local ok = tester:allGood()
-		self:isEvalTrue(ok)
-		self:isEqual(tester.counters.pass, 2)
-	end
-end
-)
---]===]
-
-
--- skip Tester:print(), Tester:write() and Tester:warn().
+-- skip Tester:print(), Tester:write(), Tester:warn() and Tester:lf().
 
 
 -- [===[
