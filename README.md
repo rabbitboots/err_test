@@ -1,4 +1,4 @@
-**Version:** 2.1.0
+**Version:** 2.1.1
 
 # errTest
 
@@ -122,20 +122,22 @@ For this to work correctly, you must not print trailing `\n`s at the end of any 
 
 Runs a function, expecting it to return without raising a Lua error. If an error is raised, then the job fails.
 
-`Tester:expectLuaReturn([desc], func, ...)`
+`local a,b,c,d,e,f = Tester:expectLuaReturn([desc], func, ...)`
 
 * `[desc]`: (string) Optional string description for the job.
 
 * `func`: (function) The function to test.
 
 * `...`: varargs list to be passed to `func`.
+
+**Returns:** The first six return values of `func`.
 
 
 ## Tester:expectLuaError
 
 Runs a function, expecting it to raise a Lua error. If the function returns, then the job fails.
 
-`Tester:expectLuaError([desc], func, ...)`
+`local err_str = Tester:expectLuaError([desc], func, ...)`
 
 * `[desc]`: (string) Optional string description for the job.
 
@@ -143,6 +145,7 @@ Runs a function, expecting it to raise a Lua error. If the function returns, the
 
 * `...`: varargs list to be passed to `func`.
 
+**Returns:** The error string that was dispatched by `pcall()`.
 
 **Notes:**
 

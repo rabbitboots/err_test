@@ -1,4 +1,4 @@
--- errTest v2.1.0
+-- errTest v2.1.1
 -- https://github.com/rabbitboots/err_test
 
 --[[
@@ -221,20 +221,34 @@ function _mt_test:warn(str)
 end
 
 
+local function _str(...)
+	local s = ""
+	for i = 1, select("#", ...) do
+		local v = select(i, ...)
+		local s2 = tostring(v ~= nil and v or "")
+		s = s .. s2
+		if #s2 > 0 and i < select("#", ...) then
+			s = s .. ", "
+		end
+	end
+	return s
+end
+
+
 function _mt_test:expectLuaReturn(desc, func, ...)
 	_argType(1, desc, "nil/string")
 	_argType(2, func, "function")
 
 	self:write(3, interp(lang.test_expect_pass, desc or "", getLabel(self, func), varargsToString(self, ...)))
 
-	local ok, res = pcall(func, ...)
+	local ok, a,b,c,d,e,f = pcall(func, ...)
 	if not ok then
-		error(lang.test_expect_pass_failed .. "\n\t" .. tostring(res))
+		error(lang.test_expect_pass_failed .. "\n\t" .. _str(a,b,c,d,e,f))
 	end
 
 	self:lf(4)
 
-	return ok, res
+	return a,b,c,d,e,f
 end
 
 
@@ -244,17 +258,17 @@ function _mt_test:expectLuaError(desc, func, ...)
 
 	self:write(3, interp(lang.test_expect_fail, desc or "", getLabel(self, func), varargsToString(self, ...)))
 
-	local ok, res = pcall(func, ...)
+	local ok, a,b,c,d,e,f = pcall(func, ...)
 	if ok == true then
-		error(lang.test_expect_fail_passed .. "\n\t" .. tostring(res))
+		error(lang.test_expect_fail_passed .. "\n" .. _str(a,b,c,d,e,f))
 	end
 
 	self:lf(4)
-	self:write(4, " >  " .. tostring(res))
+	self:write(4, " >  " .. _str(a))
 	self:lf(4)
 	self:lf(3)
 
-	return ok, res
+	return a
 end
 
 

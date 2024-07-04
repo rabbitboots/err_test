@@ -132,6 +132,14 @@ self:registerJob("Tester:expectLuaReturn()", function(self)
 		self:expectLuaError("arg #2 bad type", _mt_test.expectLuaReturn, tester, "foo", "oops")
 
 		self:expectLuaReturn("expect return", _mt_test.expectLuaReturn, tester, "success", dummyOK)
+		local a,b,c,d,e,f,g = self:expectLuaReturn("expect six return values", _mt_test.expectLuaReturn, tester, "retvals", function() return 1, 2, 3, 4, 5, 6 end)
+		self:isEqual(a, 1)
+		self:isEqual(b, 2)
+		self:isEqual(c, 3)
+		self:isEqual(d, 4)
+		self:isEqual(e, 5)
+		self:isEqual(f, 6)
+		self:isEqual(g, nil)
 	end
 end
 )
@@ -149,6 +157,8 @@ self:registerJob("Tester:expectLuaError()", function(self)
 		self:expectLuaError("arg #2 bad type", _mt_test.expectLuaError, tester, "foo", "oops")
 
 		self:expectLuaReturn("expect return", _mt_test.expectLuaError, tester, "success", dummyAlwaysError)
+
+		self:expectLuaError("unexpected return", _mt_test.expectLuaError, tester, "unexpected return", function() return 1, 2, 3, 4, 5, 6 end)
 	end
 end
 )
