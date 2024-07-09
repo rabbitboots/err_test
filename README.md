@@ -28,7 +28,7 @@ Creates a new Tester instance.
 * Here is a chart of the verbosity levels. Each level includes the output of the lower levels:
 
 | Level | Description                       |
-+-------+-----------------------------------+
+| ----- | --------------------------------- |
 | 0     | No output                         |
 | 1     | Start, end labels; final results  |
 | 2     | Job names, warnings               |
