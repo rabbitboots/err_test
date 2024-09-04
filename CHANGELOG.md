@@ -1,5 +1,11 @@
 # errTest Changelog
 
+# v2.1.2 2024-SEPT-04
+* Removed pcall in `Tester:expectLuaReturn()` so that errors show relevant tracebacks.
+* Removed all return values in `Tester:expectLuaError()`. If the pcall returned successful, then the method would raise an error before the *return* keyword could be reached.
+* Minor adjustments to README.md and the test file.
+
+
 # v2.1.1 2024-JUL-04
 * Changed `Tester:expectLuaReturn()` to return the first six return values provided by `pcall()`. Previously, it returned `pcall()`'s first argument (indicating success of the call) -- which is unnecessary in this context -- and the first return value only.
 * Changed `Tester:expectLuaError()` to return just the error string dispatched by `pcall()`, or the first six return values if `pcall()` is successful. Previously, it returned `pcall()`'s first argument (indicating failure of the call), which is unnecessary in this context.

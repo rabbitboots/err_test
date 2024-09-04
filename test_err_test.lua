@@ -1,8 +1,10 @@
 local PATH = ... and (...):match("(.-)[^%.]+$") or ""
 
 
+require(PATH .. "test.lib.strict")
+
+
 local errTest = require(PATH .. "err_test")
-local strict = require(PATH .. "test.lib.strict")
 
 
 local function dummyAlwaysError()

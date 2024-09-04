@@ -1,4 +1,4 @@
-**Version:** 2.1.1
+**Version:** 2.1.2
 
 # errTest
 
@@ -111,7 +111,7 @@ Increments the Tester's warning counter, and prints a message to the terminal *i
 
 Prints a line feed (newline) if the verbosity level matches. Works in tandem with `Tester:print()`, `Tester:write()` or `Tester:warn()` to prevent more than two line feeds from being printed at a time.
 
-For this to work correctly, you must not print trailing `\n`s at the end of any console output.
+For this to work correctly, you must not emit trailing `\n`s at the end of any console output.
 
 `Tester:lf(level)`
 
@@ -137,15 +137,13 @@ Runs a function, expecting it to return without raising a Lua error. If an error
 
 Runs a function, expecting it to raise a Lua error. If the function returns, then the job fails.
 
-`local err_str = Tester:expectLuaError([desc], func, ...)`
+`Tester:expectLuaError([desc], func, ...)`
 
 * `[desc]`: (string) Optional string description for the job.
 
 * `func`: (function) The function to test.
 
 * `...`: varargs list to be passed to `func`.
-
-**Returns:** The error string that was dispatched by `pcall()`.
 
 **Notes:**
 
@@ -158,16 +156,16 @@ The tester instance includes the following assertion methods:
 
 | Method                          | Pass Condition              |
 | ------------------------------- | --------------------------- |
-| Tester:isEqual(a, b)            | a == b                      |
-| Tester:isNotEqual(a, b)         | a ~= b                      |
-| Tester:isBoolTrue(a)            | a == true                   |
-| Tester:isBoolFalse(a)           | a == false                  |
-| Tester:isEvalTrue(a)            | a ~= false and a ~= nil     |
-| Tester:isEvalFalse(a)           | a == false or a == nil      |
-| Tester:isNil(a)                 | a == nil                    |
-| Tester:isNotNil(a)              | a ~= nil                    |
-| Tester:isNan(a)                 | a ~= a                      |
-| Tester:isNotNan(a)              | a == a                      |
+| Tester:isEqual(a, b)            | `a == b`                    |
+| Tester:isNotEqual(a, b)         | `a ~= b`                    |
+| Tester:isBoolTrue(a)            | `a == true`                 |
+| Tester:isBoolFalse(a)           | `a == false`                |
+| Tester:isEvalTrue(a)            | `a ~= false and a ~= nil`   |
+| Tester:isEvalFalse(a)           | `a == false or a == nil`    |
+| Tester:isNil(a)                 | `a == nil`                  |
+| Tester:isNotNil(a)              | `a ~= nil`                  |
+| Tester:isNan(a)                 | `a ~= a`                    |
+| Tester:isNotNan(a)              | `a == a`                    |
 | Tester:isType(val, expected)    | *type(val) in expected*     |
 | Tester:isNotType(val, expected) | *type(val) not in expected* |
 
