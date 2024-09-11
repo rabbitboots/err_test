@@ -1,5 +1,10 @@
 # errTest Changelog
 
+# v2.1.3 2024-SEPT-11
+* Changed `expectLuaError()` to better tolerate bad `__tostring` metamethods. This has no effect in Lua versions 5.3 and 5.4, which raise an error upon `__tostring` returning a non-string value.
+* Moved `strict.lua` up one folder.
+
+
 # v2.1.2 2024-SEPT-04
 * Removed pcall in `Tester:expectLuaReturn()` so that errors show relevant tracebacks.
 * Removed all return values in `Tester:expectLuaError()`. If the pcall returned successful, then the method would raise an error before the *return* keyword could be reached.

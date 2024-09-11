@@ -1,7 +1,7 @@
 local PATH = ... and (...):match("(.-)[^%.]+$") or ""
 
 
-require(PATH .. "test.lib.strict")
+require(PATH .. "test.strict")
 
 
 local errTest = require(PATH .. "err_test")

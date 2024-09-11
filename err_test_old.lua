@@ -1,4 +1,4 @@
--- errTest v2.1.3
+-- errTest v2.1.2
 -- https://github.com/rabbitboots/err_test
 
 --[[
@@ -53,18 +53,9 @@ errTest.lang = {
 	test_expect_pass = "[expectReturn] $1: $2 ($3): ",
 	test_expect_fail = "[expectError] $1: $2 ($3): ",
 	test_expect_fail_passed = "Expected failing call passed:",
-	test_totals = "$1 jobs passed. Warnings: $2",
-	tostring_fail = "('tostring()' failed)"
+	test_totals = "$1 jobs passed. Warnings: $2"
 }
 local lang = errTest.lang
-
-
--- guard against bad '__tostring' metamethods in 5.1, 5.2 and LuaJIT.
--- 5.3 and 5.4 check that the return value is a string.
-local function _tostring(s)
-	s = tostring(s)
-	return type(s) == "string" and s or lang.tostring_fail
-end
 
 
 local interp -- v v02
@@ -110,7 +101,7 @@ local function varargsToString(self, ...)
 
 	local temp = {...}
 	for i = 1, n_args do
-		temp[i] = _tostring(temp[i])
+		temp[i] = tostring(temp[i])
 	end
 
 	return table.concat(temp, ", ")
@@ -224,7 +215,7 @@ function _mt_test:warn(str)
 	self.warnings = self.warnings + 1
 	if self.verbosity >= 2 then
 		self.lf_count = 1
-		print(interp(lang.msg_warn, str))
+		print(interp(lang.msg_warn, tostring(str)))
 	end
 end
 
@@ -233,8 +224,9 @@ local function _str(...)
 	local s = ""
 	for i = 1, select("#", ...) do
 		local v = select(i, ...)
-		s = s .. _tostring(v ~= nil and v or "")
-		if i < select("#", ...) then
+		local s2 = tostring(v ~= nil and v or "")
+		s = s .. s2
+		if #s2 > 0 and i < select("#", ...) then
 			s = s .. ", "
 		end
 	end
