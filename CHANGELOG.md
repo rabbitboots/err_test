@@ -1,5 +1,12 @@
 # errTest Changelog
 
+# v2.1.4 2024-OCT-09
+* Replaced internal functions `interp()` and `_argType()` with newer versions taken from [PILE Base](https://github.com/rabbitboots/pile_base).
+* Changed `Tester:isType()` and `Tester:isNotType()` to accept varargs lists of strings instead of one string with multiple Lua type tags.
+* `Tester:isType()` and `Tester:isNotType()` now throw errors if the provided list of types is empty.
+* Reformatted some tables in the README.
+
+
 # v2.1.3 2024-SEPT-11
 * Changed `expectLuaError()` to better tolerate bad `__tostring` metamethods. This has no effect in Lua versions 5.3 and 5.4, which raise an error upon `__tostring` returning a non-string value.
 * Moved `strict.lua` up one folder.

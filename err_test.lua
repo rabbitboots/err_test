@@ -1,4 +1,4 @@
--- errTest v2.1.3
+-- errTest v2.1.4
 -- https://github.com/rabbitboots/err_test
 
 --[[
@@ -30,10 +30,11 @@ local errTest = {}
 
 
 errTest.lang = {
-	assert_arg_bad_type = "argument #$1: bad type (expected $2, got $3)",
 	err_dupe_job = "attempt to run job twice.",
 	err_add_dupe_job = "tried to add a duplicate job function",
+	err_empty_var_list = "empty varargs list",
 	err_missing_func = "no job function at index $1",
+	err_type_bad = "argument #$1: bad type (expected [$2], got $3)",
 	fail_eq = "expected value equality",
 	fail_bool_false = "expected boolean false",
 	fail_bool_true = "expected boolean true",
@@ -44,8 +45,8 @@ errTest.lang = {
 	fail_nil = "expected nil",
 	fail_not_nil = "expected not nil",
 	fail_unwanted_nan = "unwanted NaN value",
-	fail_type_check = "expected type $1, got $2",
-	fail_not_type_check = "expected not to receive type $1, got $2",
+	fail_type_check = "expected type [$1], got $2",
+	fail_not_type_check = "expected not to receive type [$1], got $2",
 	job_msg_pre = "($1/$2) $3",
 	msg_warn = "[warn]: $1",
 	test_begin = "*** Begin test: $1 ***",
@@ -67,39 +68,42 @@ local function _tostring(s)
 end
 
 
-local interp -- v v02
+-- From PILE Base v1.1.2: pile_interp.lua / interp()
+local interp
 do
-	local v, c = {}, function(t) for k in pairs(t) do t[k] = nil end end
+	local v = {}
+	local function c()
+		for k in pairs(v) do
+			v[k] = nil
+		end
+		v["$"] = "$"
+	end
+	c()
 	interp = function(s, ...)
-		c(v)
-		for i = 1, select("#", ...) do
+		for i = 1, math.min(10, select("#", ...)) do
 			v[tostring(i)] = tostring(select(i, ...))
 		end
-		local r = tostring(s):gsub("%$(%d+)", v):gsub("%$;", "$")
-		c(v)
+		local r = tostring(s):gsub("%$(.)", v)
+		c()
 		return r
 	end
 end
 
 
-local _mt_test = {}
-_mt_test.__index = _mt_test
-
-
-local function _multiType(val, list)
-	for w in list:gmatch("(%w+)") do
-		if type(val) == w then
-			return true
+-- From PILE Base v1.1.2: pile_arg_check.lua / argCheck.type()
+local function _argType(n, v, ...)
+	local typ = type(v)
+	for i = 1, select("#", ...) do
+		if typ == select(i, ...) then
+			return
 		end
 	end
+	error(interp(lang.err_type_bad, n, table.concat({...}, ", "), typ), 2)
 end
 
 
-local function _argType(arg_n, val, expected)
-	if not _multiType(val, expected) then
-		error(interp(lang.assert_arg_bad_type, arg_n, expected, type(val)), 2)
-	end
-end
+local _mt_test = {}
+_mt_test.__index = _mt_test
 
 
 local function varargsToString(self, ...)
@@ -123,8 +127,8 @@ end
 
 
 function errTest.new(name, verbosity)
-	_argType(1, name, "nil/string")
-	_argType(2, verbosity, "nil/number")
+	_argType(1, name, "nil", "string")
+	_argType(2, verbosity, "nil", "number")
 
 	local self = {
 		name = name or "",
@@ -143,7 +147,7 @@ end
 
 
 function _mt_test:registerFunction(label, func)
-	_argType(1, label, "nil/string")
+	_argType(1, label, "nil", "string")
 	_argType(2, func, "function")
 
 	self.reg[func] = label
@@ -151,7 +155,7 @@ end
 
 
 function _mt_test:registerJob(desc, func)
-	_argType(1, desc, "nil/string")
+	_argType(1, desc, "nil", "string")
 	_argType(2, func, "function")
 
 	for i, job in ipairs(self.jobs) do
@@ -243,7 +247,7 @@ end
 
 
 function _mt_test:expectLuaReturn(desc, func, ...)
-	_argType(1, desc, "nil/string")
+	_argType(1, desc, "nil", "string")
 	_argType(2, func, "function")
 
 	self:write(3, interp(lang.test_expect_pass, desc or "", getLabel(self, func), varargsToString(self, ...)))
@@ -257,7 +261,7 @@ end
 
 
 function _mt_test:expectLuaError(desc, func, ...)
-	_argType(1, desc, "nil/string")
+	_argType(1, desc, "nil", "string")
 	_argType(2, func, "function")
 
 	self:write(3, interp(lang.test_expect_fail, desc or "", getLabel(self, func), varargsToString(self, ...)))
@@ -290,20 +294,40 @@ function _mt_test:isNan(a) self:print(4, "isNan()", a) if a == a then error(lang
 function _mt_test:isNotNan(a) self:print(4, "isNotNan()", a) if a ~= a then error(lang.fail_unwanted_nan, 2) end end
 
 
-function _mt_test:isType(val, expected)
-	_argType(1, expected, "string")
-	self:print(4, "isType", type(val), ";", expected)
-	if not _multiType(val, expected) then
-		error(interp(lang.fail_type_check, expected, type(val)), 2)
+function _mt_test:isType(val, ...)
+	local exp_arr = {...}
+	if #exp_arr == 0 then
+		error(lang.err_empty_var_list)
 	end
+	for i, expected in ipairs(exp_arr) do
+		_argType(i + 1, expected, "string")
+	end
+	local exp_str = table.concat(exp_arr, ", ")
+	self:print(4, "isType", type(val), ";", exp_str)
+	for i, expected in ipairs(exp_arr) do
+		if type(val) == expected then
+			return
+		end
+	end
+
+	error(interp(lang.fail_type_check, exp_str, type(val)), 2)
 end
 
 
-function _mt_test:isNotType(val, not_expected)
-	_argType(1, not_expected, "string")
-	self:print(4, "isNotType", type(val), ";", not_expected)
-	if _multiType(val, not_expected) then
-		error(interp(lang.fail_not_type_check, not_expected, type(val)), 2)
+function _mt_test:isNotType(val, ...)
+	local nexp_arr = {...}
+	if #nexp_arr == 0 then
+		error(lang.err_empty_var_list)
+	end
+	for i, not_expected in ipairs(nexp_arr) do
+		_argType(i + 1, not_expected, "string")
+	end
+	local nexp_str = table.concat(nexp_arr, ", ")
+	self:print(4, "isNotType", type(val), ";", nexp_str)
+	for i, not_expected in ipairs(nexp_arr) do
+		if type(val) == not_expected then
+			error(interp(lang.fail_not_type_check, nexp_str, type(val)), 2)
+		end
 	end
 end
 

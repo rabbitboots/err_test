@@ -1,4 +1,4 @@
-**Version:** 2.1.3
+**Version:** 2.1.4
 
 # errTest
 
@@ -27,13 +27,13 @@ Creates a new Tester instance.
 
 * Here is a chart of the verbosity levels. Each level includes the output of the lower levels:
 
-| Level | Description                       |
-| ----- | --------------------------------- |
-| 0     | No output                         |
-| 1     | Start, end labels; final results  |
-| 2     | Job names, warnings               |
-| 3     | Job task labels                   |
-| 4     | Job and assertion output          |
+| Level | Description |
+| - | - |
+| 0 | No output |
+| 1 | Start, end labels; final results |
+| 2 | Job names, warnings |
+| 3 | Job task labels |
+| 4 | Job and assertion output |
 
 
 # Tester: Setup and Configuration
@@ -154,22 +154,22 @@ Runs a function, expecting it to raise a Lua error. If the function returns, the
 
 The tester instance includes the following assertion methods:
 
-| Method                          | Pass Condition              |
-| ------------------------------- | --------------------------- |
-| Tester:isEqual(a, b)            | `a == b`                    |
-| Tester:isNotEqual(a, b)         | `a ~= b`                    |
-| Tester:isBoolTrue(a)            | `a == true`                 |
-| Tester:isBoolFalse(a)           | `a == false`                |
-| Tester:isEvalTrue(a)            | `a ~= false and a ~= nil`   |
-| Tester:isEvalFalse(a)           | `a == false or a == nil`    |
-| Tester:isNil(a)                 | `a == nil`                  |
-| Tester:isNotNil(a)              | `a ~= nil`                  |
-| Tester:isNan(a)                 | `a ~= a`                    |
-| Tester:isNotNan(a)              | `a == a`                    |
-| Tester:isType(val, expected)    | *type(val) in expected*     |
-| Tester:isNotType(val, expected) | *type(val) not in expected* |
+| Method | Pass Condition |
+| - | - |
+| Tester:isEqual(a, b) | `a == b` |
+| Tester:isNotEqual(a, b) | `a ~= b` |
+| Tester:isBoolTrue(a) | `a == true` |
+| Tester:isBoolFalse(a) | `a == false` |
+| Tester:isEvalTrue(a) | `a ~= false and a ~= nil` |
+| Tester:isEvalFalse(a) | `a == false or a == nil` |
+| Tester:isNil(a) | `a == nil` |
+| Tester:isNotNil(a) | `a ~= nil` |
+| Tester:isNan(a) | `a ~= a` |
+| Tester:isNotNan(a) | `a == a` |
+| Tester:isType(val, ...) | *type(val) in ...* |
+| Tester:isNotType(val, ...) | *type(val) not in ...* |
 
-For the last two, `expected` is a string with Lua type tags that are separated by non-alphanumeric characters. For example, to assert that a value is a string or a boolean, you could call `Tester:isType(val, "string, boolean")`.
+For the last two, `...` is a varargs list of strings. For example, to assert that a value is a string or a boolean, you could call `Tester:isType(val, "string", "boolean")`.
 
 
 # License (MIT)

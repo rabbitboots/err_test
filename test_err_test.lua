@@ -218,12 +218,12 @@ self:registerJob("Tester: <various assertion methods>", function(self)
 		self:expectLuaReturn("a == a", _mt_test.isNotNan, tester, 0, 0)
 
 		self:expectLuaError("#2 bad type", _mt_test.isType, tester, "foo", function() end)
-		self:expectLuaError("type not in arg #2", _mt_test.isType, tester, "foo", "nil/number/table/userdata")
-		self:expectLuaReturn("type is in arg #2", _mt_test.isType, tester, "foo", "number/string")
+		self:expectLuaError("type not in arg #2", _mt_test.isType, tester, "foo", "nil", "number", "table", "userdata")
+		self:expectLuaReturn("type is in arg #2", _mt_test.isType, tester, "foo", "number", "string")
 
 		self:expectLuaError("#2 bad type", _mt_test.isNotType, tester, "foo", function() end)
-		self:expectLuaError("type is in arg #2", _mt_test.isNotType, tester, "foo", "number/string")
-		self:expectLuaReturn("type not in arg #2", _mt_test.isNotType, tester, "foo", "nil/number/table/userdata")
+		self:expectLuaError("type is in arg #2", _mt_test.isNotType, tester, "foo", "number", "string")
+		self:expectLuaReturn("type not in arg #2", _mt_test.isNotType, tester, "foo", "nil", "number", "table", "userdata")
 	end
 end
 )
